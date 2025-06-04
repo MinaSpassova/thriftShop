@@ -1,0 +1,258 @@
+import java.util.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
+
+public class Main {
+    static JFrame frame;
+    static JPanel thriftShopSign;
+    static JPanel enteringUser;
+    static JPanel currentUser;
+    static JPanel itemInfo;
+    static JPanel exitThriftShop;
+
+    static JLabel welcome;
+    static JLabel enterNameLabel;
+    static JTextField nameField;
+    static JLabel enterBalanceLabel;
+    static JTextField balanceField;
+
+    static JLabel currentUserName;
+    static JLabel currentUserNameField;
+
+    static JPanel constant;
+    static JLabel balance;
+    static JLabel balanceOutput;
+    static JLabel dayOfWeek;
+    static JLabel day;
+    static JLabel priceKg;
+    static JLabel price;
+
+    static JComboBox<Item> items;
+    static JLabel priceOfItem;
+    static JButton purchaseItem;
+    static JLabel weightOfItem;
+    static JLabel itemPurchased;
+    static JButton exit;
+
+    static JButton enterShop;
+    static JLabel enterShopLabel;
+
+    public static void main(String[] args) {
+        frame = new JFrame();
+        frame.setSize(900, 1000);
+        frame.setLayout(new GridLayout(0, 1));
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        thriftShopSign = new JPanel();
+        thriftShopSign.setBackground(Color.PINK);
+        enteringUser = new JPanel();
+        enteringUser.setBackground(Color.PINK);
+        enteringUser.setLayout(new GridLayout(2, 3));
+        currentUser = new JPanel();
+        currentUser.setBackground(Color.PINK);
+        itemInfo = new JPanel();
+        itemInfo.setBackground(Color.PINK);
+        exitThriftShop = new JPanel();
+        exitThriftShop.setBackground(Color.PINK);
+
+        welcome = new JLabel("Welcome to the thrift shop!");
+        welcome.setFont(new Font("Times New Roman", Font.BOLD, 30));
+
+        frame.add(thriftShopSign);
+        frame.add(enteringUser);
+        frame.add(currentUser);
+        frame.add(itemInfo);
+        frame.add(exitThriftShop);
+
+        thriftShopSign.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        enteringUser.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        currentUser.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        itemInfo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        exitThriftShop.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        thriftShopSign.add(welcome);
+
+        enterNameLabel = new JLabel("enter name to queue:");
+        enterNameLabel.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        nameField = new JTextField(15);
+        nameField.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        enterBalanceLabel = new JLabel("enter balance:");
+        enterBalanceLabel.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        balanceField = new JTextField(15);
+        balanceField.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        enterShop = new JButton("enter queue");
+        enterShop.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        enterShopLabel = new JLabel();
+        enterShopLabel.setFont(new Font("Times New Roman", Font.BOLD, 15));
+        enteringUser.add(enterNameLabel);
+        enteringUser.add(nameField);
+        enteringUser.add(enterShop);
+        enteringUser.add(enterBalanceLabel);
+        enteringUser.add(balanceField);
+        enteringUser.add(enterShopLabel);
+
+
+        constant = new JPanel();
+
+        currentUserName = new JLabel("Current user: ");
+        currentUserName.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        currentUserNameField = new JLabel("no customer yet");
+        currentUserNameField.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        currentUser.setLayout(new GridLayout(1, 2));
+        currentUser.add(currentUserName);
+        currentUser.add(currentUserNameField);
+        constant.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+        constant.setLayout(new GridLayout(3, 2));
+        balance = new JLabel("balance: ");
+        balanceOutput = new JLabel();
+        dayOfWeek = new JLabel("day of the week: ");
+        day = new JLabel();
+        priceKg = new JLabel("price/kg");
+        price = new JLabel();
+        constant.add(balance);
+        constant.add(balanceOutput);
+        constant.add(dayOfWeek);
+        constant.add(day);
+        constant.add(priceKg);
+        constant.add(price);
+        currentUser.add(constant);
+
+        ArrayList<Item> itemsList = new ArrayList<>();
+        itemsList.add(new brandedItem("red tank top", 0.15, "True Religion"));
+        itemsList.add(new brandedItem("studded jeans", 0.8, "True Religion"));
+        itemsList.add(new Item("teal sequin top", 0.2));
+        itemsList.add(new Item("black lace top", 0.1));
+        itemsList.add(new brandedItem("black long-sleeve", 0.12, "Bebe"));
+        itemsList.add(new Item("denim shorts", 0.45));
+        itemsList.add(new brandedItem("black shirt", 0.35, "Guess"));
+        itemsList.add(new Item("blue floral skirt", 0.25));
+
+        int initialSize = itemsList.size();
+
+        Item[] itemsArray = new Item[initialSize];
+        for(int i=0; i<initialSize; i++){
+            itemsArray[i] = itemsList.get(i);
+        }
+
+        items = new JComboBox<Item>(itemsArray);
+        priceOfItem = new JLabel("price of item:");
+        priceOfItem.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        purchaseItem = new JButton("purchase item");
+        purchaseItem.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        weightOfItem = new JLabel("weight of item:");
+        weightOfItem.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+
+        itemInfo.setLayout(new GridLayout(2, 2));
+        itemInfo.add(items);
+        itemInfo.add(purchaseItem);
+        itemInfo.add(priceOfItem);
+        itemInfo.add(weightOfItem);
+
+        exitThriftShop.setLayout(new GridLayout(2, 1));
+        itemPurchased = new JLabel();
+        itemPurchased.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        exitThriftShop.add(itemPurchased);
+        exit = new JButton("exit");
+        exit.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        exitThriftShop.add(exit);
+
+        Queue<Person> personQueue = new LinkedList<>();
+
+        enterShop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String newName = currentUserName.getText();
+                        Double newBalance = Double.parseDouble(balanceField.getText());
+                        personQueue.add(new Person(newName, newBalance));
+                        enterShopLabel.setText("You have entered the queue");
+                }
+                catch(Exception m){
+                    enterShopLabel.setText("Something's wrong!");
+                }
+            }
+        });
+
+        if(personQueue.poll()!=null){
+            currentUserNameField.setText(personQueue.poll().getNamePerson());
+        }
+
+        Random random = new Random();
+        int dayOfWeekNum = random.nextInt(7)+1;
+
+        switch (dayOfWeekNum){
+            case 1:
+                int pricePerKgMon = 19;
+                day.setText("monday");
+                price.setText(String.valueOf(pricePerKgMon));
+
+
+
+        }
+
+
+        frame.setVisible(true);
+    }
+}
+
+class Item{
+    private String name;
+    private double weight;
+
+    public Item(String name, double weight) {
+        this.name = name;
+        this.weight = weight;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getWeight() {
+        return weight;
+    }
+}
+
+class brandedItem extends Item{
+    private String brand;
+
+    public brandedItem(String name, double weight, String brand){
+        super(name, weight);
+        this.brand = brand;
+    }
+
+    public String getBrand(){
+        return brand;
+    }
+}
+
+class Person{
+    private String namePerson;
+    private double balancePerson;
+
+    public Person(String namePerson, double balancePerson){
+        this.namePerson = namePerson;
+        this.balancePerson = balancePerson;
+    }
+
+    public String getNamePerson(){
+        return namePerson;
+    }
+
+    public String setNamePerson(String namePerson){
+        return namePerson;
+    }
+
+    public double getBalancePerson(){
+        return balancePerson;
+    }
+
+    public double setBalancePerson(double balancePerson){
+        return balancePerson;
+    }
+}
