@@ -1,0 +1,539 @@
+import java.util.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Queue;
+import java.util.Random;
+import java.io.*;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class Main {
+    //declaring all GUI components outside the main method so that they are accessible in the whole Main class
+    static JFrame frame;
+    static JPanel thriftShopSign;
+    static JPanel enteringUser;
+    static JPanel currentUser;
+    static JPanel itemInfo;
+    static JPanel exitThriftShop;
+
+    static JLabel welcome;
+    static JLabel enterNameLabel;
+    static JTextField nameField;
+    static JLabel enterBalanceLabel;
+    static JTextField balanceField;
+
+    static JLabel currentUserName;
+    static JLabel currentUserNameField;
+
+    static JPanel constant;
+    static JLabel balance;
+    static JLabel balanceOutput;
+    static JLabel dayOfWeek;
+    static JLabel day;
+    static JLabel priceKg;
+    static JLabel price;
+
+    static JComboBox<Item> items;
+    static JLabel priceOfItem;
+    static JButton purchaseItem;
+    static JLabel weightOfItem;
+    static JLabel itemPurchased;
+    static JButton exit;
+
+    static JButton enterShop;
+    static JLabel enterShopLabel;
+
+    static int pricePerKg;
+
+    public static void main(String[] args) {
+        //declaring and initializing a timer so that certain GUI components get wiped after a certain time
+        Timer timer = new Timer();
+
+        //initializing frame and its layout
+        frame = new JFrame();
+        frame.setSize(900, 1000);
+        frame.setLayout(new GridLayout(0, 1));
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //building 5 panels to hold the components for better organization and making them pink
+        thriftShopSign = new JPanel();
+        thriftShopSign.setBackground(Color.PINK);
+        enteringUser = new JPanel();
+        enteringUser.setBackground(Color.PINK);
+        enteringUser.setLayout(new GridLayout(2, 3));
+        currentUser = new JPanel();
+        currentUser.setBackground(Color.PINK);
+        itemInfo = new JPanel();
+        itemInfo.setBackground(Color.PINK);
+        exitThriftShop = new JPanel();
+        exitThriftShop.setBackground(Color.PINK);
+
+        //making welcome sign which stays constant for the entirety of the program
+        welcome = new JLabel("Welcome to the thrift shop!");
+        welcome.setFont(new Font("Times New Roman", Font.BOLD, 30));
+
+        //adding the panels to the frame one by one so that they are one under the other
+        frame.add(thriftShopSign);
+        frame.add(enteringUser);
+        frame.add(currentUser);
+        frame.add(itemInfo);
+        frame.add(exitThriftShop);
+
+        //making border for all panels so that the GUI looks cleaner and more organized
+        thriftShopSign.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        enteringUser.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        currentUser.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        itemInfo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        exitThriftShop.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        thriftShopSign.add(welcome);
+
+        //making fonts all the same and setting text of labels, which will remain
+        enterNameLabel = new JLabel("enter name to queue:");
+        enterNameLabel.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        nameField = new JTextField(15);
+        nameField.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        enterBalanceLabel = new JLabel("enter balance:");
+        enterBalanceLabel.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        balanceField = new JTextField(15);
+        balanceField.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        enterShop = new JButton("enter queue");
+        enterShop.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        enterShopLabel = new JLabel();
+        enterShopLabel.setFont(new Font("Times New Roman", Font.BOLD, 15));
+
+        //adding all labels and textfields in the panel they correspond to
+        enteringUser.add(enterNameLabel);
+        enteringUser.add(nameField);
+        enteringUser.add(enterShop);
+        enteringUser.add(enterBalanceLabel);
+        enteringUser.add(balanceField);
+        enteringUser.add(enterShopLabel);
+
+        //making a panel for the labels which will be displayed as a constant table (balance, day and price for the day)
+        constant = new JPanel();
+
+        //initializing labels and making them the appropriate font
+        currentUserName = new JLabel("Current user: ");
+        currentUserName.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        currentUserNameField = new JLabel("no customer yet");
+        currentUserNameField.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        currentUser.setLayout(new GridLayout(1, 2));
+        currentUser.add(currentUserName);
+        currentUser.add(currentUserNameField);
+        constant.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+        constant.setLayout(new GridLayout(3, 2));
+        balance = new JLabel("balance: ");
+        balanceOutput = new JLabel();
+        dayOfWeek = new JLabel("day of the week: ");
+        day = new JLabel();
+        priceKg = new JLabel("price/kg: ");
+        price = new JLabel();
+
+        //adding constant information to the panel, which goes into a bigger panel
+        constant.add(balance);
+        constant.add(balanceOutput);
+        constant.add(dayOfWeek);
+        constant.add(day);
+        constant.add(priceKg);
+        constant.add(price);
+        currentUser.add(constant);
+
+        //making an arraylist with the Item and brandedItem objects
+        ArrayList<Item> itemsList = new ArrayList<>();
+        itemsList.add(new brandedItem("red tank top", 0.15, "True Religion"));
+        itemsList.add(new brandedItem("studded jeans", 0.8, "True Religion"));
+        itemsList.add(new Item("teal sequin top", 0.2));
+        itemsList.add(new Item("black lace top", 0.1));
+        itemsList.add(new brandedItem("black long-sleeve", 0.12, "Bebe"));
+        itemsList.add(new Item("denim shorts", 0.45));
+        itemsList.add(new brandedItem("black shirt", 0.35, "Guess"));
+        itemsList.add(new Item("blue floral skirt", 0.25));
+        itemsList.add(new Item("white babydoll top", 0.35));
+        itemsList.add(new Item("pink tank top", 0.3));
+        itemsList.add(new Item("wisin y yandel shirt", 0.4));
+        itemsList.add(new brandedItem("denim jacket", 0.75, "esprit"));
+
+        //declaring and initializing an int value with the initial size of the arraylist
+        int initialSize = itemsList.size();
+
+        //declaring and initializing an array and adding all elements from arraylist into the array
+        Item[] itemsArray = new Item[initialSize];
+        for(int i=0; i<initialSize; i++){
+            itemsArray[i] = itemsList.get(i);
+        }
+
+        //initializing the combobox holding the items and passing the array with the items
+        items = new JComboBox<Item>(itemsArray);
+
+        //initializing labels to show price and weight of item
+        priceOfItem = new JLabel("price of item:");
+        priceOfItem.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        purchaseItem = new JButton("purchase item");
+        purchaseItem.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        weightOfItem = new JLabel("weight of item:");
+        weightOfItem.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+
+        //adding components in the panel
+        itemInfo.setLayout(new GridLayout(2, 2));
+        itemInfo.add(items);
+        itemInfo.add(purchaseItem);
+        itemInfo.add(priceOfItem);
+        itemInfo.add(weightOfItem);
+
+        //initializing GUI components and making a grid layout so that everything goes in the panel in an organized manner
+        //making sure fonts are all the same and
+        exitThriftShop.setLayout(new GridLayout(2, 1));
+        itemPurchased = new JLabel();
+        itemPurchased.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        exitThriftShop.add(itemPurchased);
+        exit = new JButton("exit");
+        exit.setFont(new Font("Times New Roman", Font.ITALIC, 25));
+        exitThriftShop.add(exit);
+
+        //making a Person object queue to hold all customers and make only the first one show up as the current user
+        //makes treating Person objects easier since it follows FIFO principle and simulates a real shop experience
+        Queue<Person> personQueue = new LinkedList<>();
+
+        //first action listener for the enterShop button
+        //allows user to enter the shop after filling in their info
+        enterShop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //making a try-catch for the whole action listener
+                try {
+                    //getting the name of the user from the nameField and balanceField and initializing a new Person object using that name and balance
+                    String newName = nameField.getText();
+                    Double newBalance = Double.parseDouble(balanceField.getText());
+                    Person p1 = new Person(newName, newBalance);
+
+                    //using a try-catch to write the name and balance to a text file named customers.txt
+                    try(FileWriter out = new FileWriter("customers.txt", true)){
+                        out.write(p1.getNamePerson()+", "+String.format("%.2f", p1.getBalancePerson()));
+                    }
+                    catch(IOException m){
+                        System.out.println(m.getMessage());
+                    }
+
+                    //adding the Person object to the Person queue
+                    personQueue.add(p1);
+                    //checking first person in queue, if it isn't null, display their information as current name and current balance
+                    Person currentP = personQueue.peek();
+                    if(currentP != null) {
+                        currentUserNameField.setText(currentP.getNamePerson());
+                        balanceOutput.setText(String.format("%.2f", currentP.getBalancePerson()));
+                    }
+
+                    //showing the user has entered the queue successfully
+                    enterShopLabel.setText("You have entered the queue");
+                    itemPurchased.setText("don't steal!! (your name is in our files...)");
+
+                    //making a timer task to remove the text informing the user if they have entered the queue and that their name is written
+                    TimerTask removeEnterShop = new TimerTask() {
+                        @Override
+                        public void run() {
+                            enterShopLabel.setText(" ");
+                            itemPurchased.setText(" ");
+                        }
+                    };
+
+                    //making a timer task to clear the text fields for the name and balance so that the next user can enter their information
+                    TimerTask removeNameBalance = new TimerTask() {
+                        @Override
+                        public void run() {
+                            nameField.setText(" ");
+                            balanceField.setText(" ");
+                        }
+                    };
+                    timer.schedule(removeEnterShop, 2000);
+                    timer.schedule(removeNameBalance, 500);
+                }
+                catch(Exception m){
+                    enterShopLabel.setText("Something's wrong!");
+                }
+            }
+        });
+
+        //choosing a random int between 1 and 7 to choose the day of the week and the price
+        Random random = new Random();
+        int dayOfWeekNum = random.nextInt(7)+1;
+
+        //making a switch-case for the different days using the random int
+        //setting up prices and day of the week labels for each day respectively
+        switch (dayOfWeekNum){
+            case 1:
+                pricePerKg = 9;
+                day.setText("monday");
+                price.setText(String.valueOf(pricePerKg));
+                //make weight and price of selected item show up even if it isn't bought
+                items.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        Item selected = (Item) items.getSelectedItem();
+                        if(selected!=null){
+                            priceOfItem.setText("price of item: "+String.format("%.2f", selected.getWeight()*pricePerKg));
+                            weightOfItem.setText("weight of item: "+selected.getWeight());
+                        }
+                    }
+                });
+                break;
+
+            case 2:
+                pricePerKg = 69;
+                day.setText("tuesday");
+                price.setText(String.valueOf(pricePerKg));
+                //make weight and price of selected item show up even if it isn't bought
+                items.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        Item selected = (Item) items.getSelectedItem();
+                        if(selected!=null){
+                            priceOfItem.setText("price of item: "+String.format("%.2f", selected.getWeight()*pricePerKg));
+                            weightOfItem.setText("weight of item: "+selected.getWeight());
+                        }
+                    }
+                });
+                break;
+
+            case 3:
+                pricePerKg = 59;
+                day.setText("wednesday");
+                price.setText(String.valueOf(pricePerKg));
+                //make weight and price of selected item show up even if it isn't bought
+                items.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        Item selected = (Item) items.getSelectedItem();
+                        if(selected!=null){
+                            priceOfItem.setText("price of item: "+String.format("%.2f", selected.getWeight()*pricePerKg));
+                            weightOfItem.setText("weight of item: "+selected.getWeight());
+                        }
+                    }
+                });
+                break;
+
+            case 4:
+                pricePerKg = 49;
+                day.setText("thursday");
+                price.setText(String.valueOf(pricePerKg));
+                //make weight and price of selected item show up even if it isn't bought
+                items.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        Item selected = (Item) items.getSelectedItem();
+                        if(selected!=null){
+                            priceOfItem.setText("price of item: "+String.format("%.2f", selected.getWeight()*pricePerKg));
+                            weightOfItem.setText("weight of item: "+selected.getWeight());
+                        }
+                    }
+                });
+                break;
+
+            case 5:
+                pricePerKg = 39;
+                day.setText("friday");
+                price.setText(String.valueOf(pricePerKg));
+                //make weight and price of selected item show up even if it isn't bought
+                items.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        Item selected = (Item) items.getSelectedItem();
+                        if(selected!=null){
+                            priceOfItem.setText("price of item: "+String.format("%.2f", selected.getWeight()*pricePerKg));
+                            weightOfItem.setText("weight of item: "+selected.getWeight());
+                        }
+                    }
+                });
+                break;
+
+            case 6:
+                pricePerKg = 29;
+                day.setText("saturday");
+                price.setText(String.valueOf(pricePerKg));
+                //make weight and price of selected item show up even if it isn't bought
+                items.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        Item selected = (Item) items.getSelectedItem();
+                        if(selected!=null){
+                            priceOfItem.setText("price of item: "+String.format("%.2f", selected.getWeight()*pricePerKg));
+                            weightOfItem.setText("weight of item: "+selected.getWeight());
+                        }
+                    }
+                });
+                break;
+
+            case 7:
+                pricePerKg = 19;
+                day.setText("sunday");
+                price.setText(String.valueOf(pricePerKg));
+                //make weight and price of selected item show up even if it isn't bought
+                items.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        Item selected = (Item) items.getSelectedItem();
+                        if(selected!=null){
+                            priceOfItem.setText("price of item: "+String.format("%.2f", selected.getWeight()*pricePerKg));
+                            weightOfItem.setText("weight of item: "+selected.getWeight());
+                        }
+                    }
+                });
+                break;
+        }
+
+        //action listener for purchaseItem button
+        //allows customer to purchase an item if their balance is enough and if there is a customer in the queue
+        purchaseItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //getting first customer and selected item from the combobox
+                Person currentP = personQueue.peek();
+                Item selectedItem = (Item) items.getSelectedItem();
+
+                //checks if there is a Person object in the queue
+                if(currentP!=null){
+                    //gets the price of the item by multiplying the weight by the price for the day shown in the constant information
+                    double itemPrice = selectedItem.getWeight()*Double.parseDouble(price.getText());
+                    double currentBalance = currentP.getBalancePerson();
+
+                    //checks if the balance of the person is bigger than the price of the item
+                    //removes item from combobox
+                    if(currentBalance>=itemPrice){
+                            currentP.setBalancePerson(currentBalance-itemPrice);
+                            balanceOutput.setText(String.format("%.2f", currentP.getBalancePerson()));
+                            items.removeItem(selectedItem);
+                            itemPurchased.setText("item has been purchased...");
+
+                            //timer task to clear the label in the bottom from the message that an item has been purchased
+                            TimerTask removeItemPurchased = new TimerTask() {
+                                @Override
+                                public void run() {
+                                    itemPurchased.setText(" ");
+                                }
+                            };
+                            //scheduling said timer task with a 2000 milliseconds delay
+                            timer.schedule(removeItemPurchased, 2000);
+
+                            //checks if combobox is empty, if so, warns user to exit because no more clothes are available
+                            if(items.getItemCount()==0){
+                            itemPurchased.setText("oops, no more clothes!! exit now...");
+                            itemPurchased.setForeground(Color.RED);
+                        }
+                    }
+                    //tells user their balance is not enough to purchase said item
+                    else{
+                        itemPurchased.setText("not enough money?!");
+
+                    }
+                }
+                //displays that there is no customer in the queue
+                else{
+                    itemPurchased.setText("no customer?!");
+
+                    //timer task to clear the label from all messages to the user
+                    TimerTask removeNoCust = new TimerTask(){
+                        @Override
+                        public void run(){
+                            itemPurchased.setText(" ");
+                        }
+                    };
+                    timer.schedule(removeNoCust, 4000);
+                }
+                }
+        });
+
+        //action listener for the exit button
+        //allows user to exit the shop
+        exit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //removes first Person object in the queue so that the program displays the next one as the current customer
+                //use of .poll() because it returns null if there is no person in the queue
+                personQueue.poll();
+                itemPurchased.setText("you have exited...");
+
+                //timer task to remove the label displaying an exit message
+                TimerTask removeExit = new TimerTask(){
+                    @Override
+                    public void run() {
+                        itemPurchased.setText(" ");
+                    }
+                };
+                //scheduling said timer task
+                timer.schedule(removeExit, 2500);
+
+                //updating the current user's information after checking there is a next Person object in the queue
+                Person nextPerson = personQueue.peek();
+                if (nextPerson != null) {
+                    currentUserNameField.setText(personQueue.peek().getNamePerson());
+                    balanceOutput.setText(String.format("%.2f", personQueue.peek().getBalancePerson()));
+                }
+                //if not, displays that there are no customers waiting in the queue
+                else{
+                    currentUserNameField.setText("no customer...");
+                    balanceOutput.setText(" ");
+                }
+            }
+        });
+
+        //making the frame visible
+        frame.setVisible(true);
+    }
+}
+
+//making an item class with attributes name and weight
+class Item{
+    private String name;
+    private double weight;
+
+    //constructor
+    public Item(String name, double weight) {
+        this.name = name;
+        this.weight = weight;
+    }
+
+    //getWeight method because weight attribute is private
+    public double getWeight() {
+        return weight;
+    }
+
+    //method used to display the object in the combobox, must be overridden to show what we want it to in readable form
+    // override toString method so that it returns only name, not object parameters in String form
+    public String toString(){
+        return name;
+    }
+}
+
+//subclass of Item class, has one additional attribute
+class brandedItem extends Item{
+    private final String brand;
+
+    //constructor
+    public brandedItem(String name, double weight, String brand){
+        //overriding the constructor from the item class
+        super(name, weight);
+        this.brand = brand;
+    }
+    //getter methods are overridden from the superclass
+}
+
+//Person class, has attributes name and balance
+class Person implements Serializable{
+    private String namePerson;
+    private double balancePerson;
+
+    //constructor
+    public Person(String namePerson, double balancePerson){
+        this.namePerson = namePerson;
+        this.balancePerson = balancePerson;
+    }
+
+    //getter method for the name because it is private
+    public String getNamePerson(){
+        return namePerson;
+    }
+
+    //getter method for the balance because it is private
+    public double getBalancePerson(){
+        return balancePerson;
+    }
+
+    //setter method for the balance
+    public void setBalancePerson(double balancePerson){
+        this.balancePerson = balancePerson;
+    }
+}
